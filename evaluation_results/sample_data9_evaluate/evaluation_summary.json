@@ -1,0 +1,8 @@
+{
+  "test_size": 449,
+  "exact_match_count": 151,
+  "exact_match_rate": 0.3363028953229399,
+  "attribute_precision": 0.7180385288966725,
+  "attribute_recall": 0.7572958995197636,
+  "attribute_f1": 0.7371449119021934
+}
