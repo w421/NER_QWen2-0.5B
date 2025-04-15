@@ -26,7 +26,9 @@ from tqdm import tqdm
 logging.set_verbosity_info()
 
 # 模型和数据配置
-MODEL_NAME = "Qwen/Qwen2-0.5B-Instruct"
+MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
+# MODEL_NAME = "../Qwen2.5-3B-Instruct"
+# MODEL_NAME = "Qwen/Qwen2-0.5B"
 OUTPUT_DIR = "trained_model"
 TRAIN_FILE = "data/train.json"
 VALID_FILE = "data/valid.json"
@@ -95,7 +97,7 @@ def preprocess_data(examples, tokenizer):
 
     # 标签处理（仅计算assistant部分的loss）
     labels = tokenized["input_ids"].clone()
-    print('有效输入', valid_indices)
+#     print('有效输入', valid_indices)
     # for i, idx in enumerate(valid_indices):
     #     assistant_content = None
     #     for msg in examples["messages"][idx]:
@@ -116,7 +118,7 @@ def preprocess_data(examples, tokenizer):
         labels[i, tokenized["attention_mask"][i] == 0] = -100
 
     tokenized["labels"] = labels
-    print('tokenlized结果', tokenized)
+#     print('tokenlized结果', tokenized)
     # return tokenized
     return {
         "input_ids": tokenized["input_ids"],
@@ -138,19 +140,18 @@ def create_lora_config():
 def main():
     print(f"开始微调 {MODEL_NAME} 模型...")
     print(f"使用设备: {'GPU' if torch.cuda.is_available() else 'CPU'}")
-    
+
     # 加载tokenizer
     print("加载tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     print(f"已加载tokenizer: {tokenizer.__class__.__name__}")
-    
+
     # 加载数据集
     print("加载数据集...")
     train_data = load_jsonl_dataset(TRAIN_FILE)
     valid_data = load_jsonl_dataset(VALID_FILE)
     print(f"训练集: {len(train_data)}条, 验证集: {len(valid_data)}条")
-    print('训练集格式----------------', train_data[0])
-    
+
     # 加载模型
     print("加载基础模型...")
     model = AutoModelForCausalLM.from_pretrained(
@@ -160,13 +161,13 @@ def main():
         trust_remote_code=True
     )
     print(f"模型参数数量: {model.num_parameters()}")
-    
+
     # 将模型修改为LoRA版本
     print("创建LoRA模型...")
     peft_config = create_lora_config()
     model = get_peft_model(model, peft_config)
     model.print_trainable_parameters()
-    
+
     # 创建训练参数
     print("配置训练参数...")
     training_args = TrainingArguments(
@@ -185,13 +186,12 @@ def main():
         lr_scheduler_type="cosine",
         report_to="none",  # 禁用Wandb等报告
     )
-    
+
     # 创建数据集
     print("创建数据集...")
     train_dataset = {"messages": [item["messages"] for item in train_data]}
     valid_dataset = {"messages": [item["messages"] for item in valid_data]}
 
-    print('训练数据集----------', train_dataset)
     # 预处理数据
     print("预处理训练数据...")
     tokenized_train = preprocess_data(train_dataset, tokenizer)

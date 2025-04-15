@@ -7,7 +7,7 @@ import os
 from sklearn.model_selection import train_test_split
 
 # 输入输出文件配置
-INPUT_FILE = "sample_data6.json"  # 包含50条样本数据的JSON文件
+INPUT_FILE = "sample_data10_ori.json"  # 包含50条样本数据的JSON文件
 OUTPUT_DIR = "data"  # 输出目录
 TRAIN_FILE = os.path.join(OUTPUT_DIR, "train.json")  # 训练数据集
 VALID_FILE = os.path.join(OUTPUT_DIR, "valid.json")  # 验证数据集
